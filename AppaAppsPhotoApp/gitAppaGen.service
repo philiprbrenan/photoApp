@@ -1,0 +1,13 @@
+#/etc/systemd/system/gitAppaGen.service
+# See: https://www.freedesktop.org/software/systemd/man/systemd.service.html
+# systemctl status gitAppaGen.service
+[Unit]
+Description=GitHub to AppaApps App Generator
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/perl /usr/bin/gitAppaGen.pl start
+ExecStop=/usr/bin/perl  /usr/bin/gitAppaGen.pl stop
+
+[Install]
+WantedBy=multi-user.target
