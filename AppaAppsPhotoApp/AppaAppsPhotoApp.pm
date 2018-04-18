@@ -34,7 +34,7 @@ my $userRepo = q(philiprbrenan/vocabulary/g/Days);                              
 
 my $testMode = 0;                                                               # 0 - production unless the manifest says otherwise: modifies the data on the servers used by published apps, 1 - test: modifies data on the server used by unpublished apps.  Apps generated on a server will default to production  uploaded to GP and other public sites should have been generated
 my $server   = qw(test www janet)[0];                                           # Short name of server to use as defined by appaapps.com DNS
-my $action   = qw(4444 2 4 3 1)[0];                                             # Action to be performed
+my $action   = qw(44 2 4 3 1)[0];                                               # Action to be performed
 
 # Development actions if we are running locally, otherwise the action is determined by the command line arguments:
 sub aFastCompile {1} # Build and run the sample application as quickly as possible for testing purposes. BUT: before you run this, make sure you have run the same compile with option aFullCompile at least once to load the server with the correct image and audio files in the correct format. Failure to do this will result in the expenditure of far to much precious time debugging problems that would not otherwise have occurred. And even worse: introducing further errors in the process because you were listening to "Close To The Edge" and not pating attention to a rather tedious problem.
@@ -640,7 +640,7 @@ my @server =                                                                    
     howToWriteAnAppName=> "an AppaApps Photo App",
     howToWriteAnApp    => q(index),
     http               => q(http://test.appaapps.com),
-    ip                 => q(173.255.230.218), 
+    ip                 => q(45.33.91.45), 
     presents           => q(Appa Apps presents:),
     serverName         => q(test),
     sampleAppSource    => q(https://github.com/philiprbrenan/100/blob/master/l/it/sourceFile.txt),
