@@ -1,4 +1,4 @@
-#!/usr/bin/perl  -I/home/phil/perl/cpan/GitHubCrud/lib
+#!/usr/bin/perl  -I/home/phil/perl/cpan/GitHubCrud/lib -I/home/phil/perl/cpan/DataTableText/lib
 #-------------------------------------------------------------------------------
 # Generate an Appa Apps Photo App from an app description held on github.com
 # Philip R Brenan at gmail dot com, Appa Apps Ltd Inc, 2017Feb26-2018
@@ -6549,7 +6549,7 @@ sub pushToGitHub                                                                
   $g->loadPersonalAccessToken;
 
 # my   @files = map {fileList("${_}*")} (congratZipDir, promptsZipDir);   		# Load zip files
-  my @files, searchDirectoryTreesForMatchingFiles(htmlImages, qw(png jpg));   # Load images
+  my @files = searchDirectoryTreesForMatchingFiles(htmlImages, qw(png jpg));   # Load images
   for my $file(@files)
    {my ($f) = removeFilePrefix(homeUser, $file); 
     say STDERR "AAAA ", $f;	
