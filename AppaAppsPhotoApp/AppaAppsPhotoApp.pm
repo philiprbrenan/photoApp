@@ -4799,7 +4799,7 @@ sub installOnServer                                                             
   my $promptsZipDir    = promptsZipDir;
   my $congratZipDir    = congratZipDir;
    
-  my $text = <<END;
+  my $textSsh = <<END;
 cat <<ENDSSH > /etc/ssh/sshd_config
 # $genAppName configuration
 # See the sshd_config(5) manpage for details
@@ -4901,7 +4901,9 @@ LC_TELEPHONE="en_US.UTF-8"
 LC_MEASUREMENT="en_US.UTF-8"
 LC_IDENTIFICATION="en_US.UTF-8"
 ENDLOCALE
+END
 
+  my $textApt = <<END;
 echo "Packages"
 apt-get -y update
 
@@ -4954,6 +4956,8 @@ mkdir -p $zipFolder
 mkdir -p $congratZipDir
 mkdir -p $promptsZipDir
 END
+  return $textApt unless $develop;                                              # Local install 
+  $textApt.$textSsh                                                             # Remote install
  } # installOnServer
 
 sub serverSetUpFromLocal                                                        # Bash script to set up server - this is run on the local machine
@@ -4964,25 +4968,31 @@ sub serverSetUpFromLocal                                                        
   my $serverSetupFile  = serverSetupFile;                                       # A temporary file containing the server set up
 
   say STDERR "Format new server: ", serverHost;
+  writeFile($serverSetupFile, installOnServer);                                 # Server set up instructions
 
-  if (1)                                                                        # Remove previous key to avoid warning messages  
-   {my $h = fpf(homeUser, qw(.ssh known_hosts));
-    my $i = serverIp;
-    my $c = qq(ssh-keygen -f "$h" -R $i);
-    say STDERR $c;
-    system($c);
+  if ($develop)                                                                 # Install on remote server
+   {if (1)                                                                      # Remove previous key to avoid warning messages  
+     {my $h = fpf(homeUser, qw(.ssh known_hosts));
+      my $i = serverIp;
+      my $c = qq(ssh-keygen -f "$h" -R $i);
+      say STDERR $c;
+      system($c);
+      confess $? if $?;
+     } 
+  
+    system(qq(ssh-copy-id $serverLogonIp));                                     # Copy identity  
     confess $? if $?;
-   } 
-
-  writeFile($serverSetupFile, installOnServer);
-  system(qq(ssh-copy-id $serverLogonIp));                                       # Copy identity  
-  confess $? if $?;
-  system(qq($rsync $serverSetupFile $serverLogonIp:$serverSetupFile));          # Copy server set up file                      
-  confess $? if $?;
-  system(qq($ssh bash $serverSetupFile));                                       # Run server set up on server
-  confess $? if $?;
-
-  &updateServerFromLocal;                                                       # Update the server 
+    system(qq($rsync $serverSetupFile $serverLogonIp:$serverSetupFile));        # Copy server set up file                      
+    confess $? if $?;
+    system(qq($ssh bash $serverSetupFile));                                     # Run server set up on server
+    confess $? if $?;
+    &updateServerFromLocal;                                                     # Update the server remotely 
+   }
+  else                                                                          # Install on local server
+   {system(qq(bash $serverSetupFile));                                          # Run server set up on server
+    confess $? if $?;
+    &updateServerOnServer;                                                       # Upate server locally
+   }  
  } 
 
 sub copyThisFileFromLocalToServer                                               # Copy this file from local to the current server
@@ -6537,21 +6547,25 @@ sub pushToGitHub                                                                
  {my $g = GitHub::Crud::new;                                                    # GitHub access object 
  ($g->userid, $g->repository) = (pushRepoUser, pushRepoName);                   # Target repo
   $g->loadPersonalAccessToken;
+
+# my   @files = map {fileList("${_}*")} (congratZipDir, promptsZipDir);   		# Load zip files
+  my @files, searchDirectoryTreesForMatchingFiles(htmlImages, qw(png jpg));   # Load images
+  for my $file(@files)
+   {my ($f) = removeFilePrefix(homeUser, $file); 
+    say STDERR "AAAA ", $f;	
+    $g->gitFile = $f;
+    $g->write(readBinaryFile($file)); 
+   }
+
   $g->utf8 = 1;                                                                 # Some of the java files have utf8 variable names
-
-  my @files = map {fileList("$_/*")} (congratZipDir, promptsZipDir, htmlImages);
-
-  for my $file(perlFiles, appSource, appJava, @files)
+  for my $file(perlFiles, appSource, appJava)                                   # Load source files
    {my ($f) = removeFilePrefix(homeUser, $file); 
     say STDERR "AAAA ", $f;	
     $g->gitFile = $f;
     $g->write(readFile($file)); 
    }
-
-
  }
  
-
 # xxxx
 #-------------------------------------------------------------------------------
 # Initialization
