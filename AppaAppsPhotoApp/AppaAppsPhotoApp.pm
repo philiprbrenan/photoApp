@@ -6539,12 +6539,16 @@ sub pushToGitHub                                                                
   $g->loadPersonalAccessToken;
   $g->utf8 = 1;                                                                 # Some of the java files have utf8 variable names
 
-  for my $file(perlFiles, appSource, appJava)
+  my @files = map {fileList("$_/*")} (congratZipDir, promptsZipDir, htmlImages);
+
+  for my $file(perlFiles, appSource, appJava, @files)
    {my ($f) = removeFilePrefix(homeUser, $file); 
     say STDERR "AAAA ", $f;	
     $g->gitFile = $f;
     $g->write(readFile($file)); 
    }
+
+
  }
  
 
